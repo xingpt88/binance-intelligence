@@ -1,0 +1,1005 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>币安智能拆解</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap">
+<style>
+/* Layout: research report. Sticky contents rail on the left (desktop), one reading column, figures and tables run the full column width. */
+:root{
+  --bg:#F3F5F6; --surface:#FFFFFF; --surface-2:#EAEFF2; --fg:#14212A; --muted:#55666F; --line:#D5DDE1; --line-strong:#93A3AC;
+  --accent:#0A6A75; --accent-soft:#DCEEF0; --money:#985700; --money-soft:#F5E8D3;
+  --ok:#1D7246; --ok-soft:#DCEFE3; --no:#AE372D; --no-soft:#F5DFDB;
+  --serif:"Noto Serif SC","Songti SC","STSong",serif;
+  --sans:"Noto Sans SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0E1519; --surface:#141E24; --surface-2:#1A262E; --fg:#E1E8EC; --muted:#93A3AC; --line:#26343D; --line-strong:#4D606B;
+  --accent:#55B8C3; --accent-soft:#143338; --money:#E0A24A; --money-soft:#382A16;
+  --ok:#62C38E; --ok-soft:#173326; --no:#E87C72; --no-soft:#3A1F1C; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1519; --surface:#141E24; --surface-2:#1A262E; --fg:#E1E8EC; --muted:#93A3AC; --line:#26343D; --line-strong:#4D606B;
+  --accent:#55B8C3; --accent-soft:#143338; --money:#E0A24A; --money-soft:#382A16;
+  --ok:#62C38E; --ok-soft:#173326; --no:#E87C72; --no-soft:#3A1F1C; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:16px;line-height:1.75;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,.mono{font-family:var(--mono);font-size:.88em}
+.wrap{max-width:1180px;margin:0 auto}
+header.hero{padding-block:56px 32px;border-bottom:1px solid var(--line);margin-bottom:40px}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.2;margin:10px 0 4px;text-wrap:balance}
+.sub{font-family:var(--serif);font-weight:600;font-size:clamp(17px,2.2vw,21px);color:var(--muted);margin:0 0 18px}
+.dek{max-width:40em;font-size:17px;margin:0 0 14px}
+.meta{max-width:46em;font-size:13.5px;color:var(--muted);margin:0}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:40px}
+@media (min-width:1040px){.layout{grid-template-columns:188px minmax(0,1fr);gap:56px}}
+nav.toc{font-size:14px}
+nav.toc .toc-h{display:none;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;text-transform:uppercase}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 8px}
+nav.toc a{display:block;text-decoration:none;color:var(--muted);padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+nav.toc a:hover{color:var(--fg);border-color:var(--line-strong)}
+@media (min-width:1040px){
+  nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start}
+  nav.toc ol{flex-direction:column;gap:2px;border-left:1px solid var(--line)}
+  nav.toc a{border:0;border-radius:0;background:none;padding:5px 0 5px 14px}
+  nav.toc .toc-h{display:block}
+}
+main{min-width:0}
+section{padding-block:8px 40px;border-bottom:1px solid var(--line);margin-bottom:40px}
+section:last-of-type{border-bottom:0}
+h2{font-family:var(--serif);font-weight:700;font-size:clamp(24px,3vw,30px);line-height:1.3;margin:0 0 6px;text-wrap:balance}
+h2 .sec-tag{display:block;font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.08em;color:var(--accent);margin-bottom:6px}
+h3{font-size:19px;font-weight:700;margin:36px 0 10px;text-wrap:balance}
+h4{font-size:16px;font-weight:700;margin:0 0 6px}
+p{margin:0 0 14px;max-width:42em}
+.lead{font-size:17px;color:var(--fg)}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+ul.clean,ol.clean{margin:0 0 16px;padding-left:1.3em;max-width:44em}
+ul.clean li,ol.clean li{margin:0 0 8px}
+/* findings */
+.findings{display:grid;gap:0;margin:0;padding:0;list-style:none;border-top:1px solid var(--line)}
+.findings li{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:16px 0;border-bottom:1px solid var(--line)}
+@media (min-width:760px){.findings li{grid-template-columns:200px minmax(0,1fr);gap:24px}}
+.findings b{font-family:var(--serif);font-size:18px}
+.findings span{max-width:40em}
+/* product cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px;margin:20px 0 8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px 14px;min-width:0}
+.card h4{font-family:var(--serif);font-size:20px;margin-bottom:2px}
+.card .pos{color:var(--muted);font-size:14px;margin:0 0 12px}
+.card dl{display:grid;grid-template-columns:52px minmax(0,1fr);gap:6px 10px;margin:0;font-size:14px;line-height:1.6}
+.card dt{color:var(--muted)}
+.card dd{margin:0}
+.card.os{border-color:var(--accent)}
+/* timeline */
+.tl{list-style:none;margin:8px 0 0;padding:0;border-left:2px solid var(--line);max-width:46em}
+.tl li{position:relative;padding:0 0 14px 22px;display:grid;grid-template-columns:minmax(0,1fr);gap:0}
+@media (min-width:640px){.tl li{grid-template-columns:132px minmax(0,1fr);gap:14px}}
+.tl li::before{content:"";position:absolute;left:-6px;top:9px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--line-strong)}
+.tl li.key::before{background:var(--accent);border-color:var(--accent)}
+.tl time{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;padding-top:2px}
+.tl span{font-size:15px}
+/* figures */
+figure{margin:24px 0 28px}
+.fig-panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+.fig-panel svg{display:block;width:100%;height:auto}
+.fig-panel.w-760 svg{min-width:760px}
+.fig-panel.w-680 svg{min-width:680px}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:10px;max-width:50em;line-height:1.65}
+.dg{color:var(--fg);font-family:var(--sans)}
+.dg .box{fill:var(--surface-2);stroke:var(--line-strong);stroke-width:1.1}
+.dg .box-a{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.4}
+.dg .cont{fill:none;stroke:var(--line-strong);stroke-width:1;stroke-dasharray:4 4}
+.dg .t1{font-size:14px;font-weight:700;fill:var(--fg)}
+.dg .t1s{font-size:13px;font-weight:700;fill:var(--fg)}
+.dg .t2{font-size:11.5px;fill:var(--muted)}
+.dg .t2f{font-size:12px;fill:var(--fg)}
+.dg .tag{font-size:11px;fill:var(--accent);font-weight:500}
+.dg .rowlab{font-size:12px;fill:var(--muted);font-family:var(--mono)}
+.dg .lab{font-size:11.5px;fill:var(--muted);paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.dg .lab-m{fill:var(--money)}
+.dg .lab-c{font-size:12px;fill:var(--fg);paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.dg .edge{stroke:var(--fg);stroke-width:1.3;fill:none}
+.dg .ro{stroke-dasharray:5 4}
+.dg .m{stroke:var(--money);stroke-width:1.6}
+.dg .life{stroke:var(--line-strong);stroke-width:1;stroke-dasharray:3 4}
+.dg .ah{fill:var(--fg)}
+.dg .ah-m{fill:var(--money)}
+.dg .chip{fill:var(--money-soft)}
+.dg .chip-t{font-size:11px;fill:var(--money);font-weight:500}
+.dg .note{fill:var(--surface-2);stroke:var(--line);stroke-width:1}
+/* tables */
+.tw{overflow-x:auto;margin:16px 0 20px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.6}
+th,td{text-align:left;vertical-align:top;padding:10px 12px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+thead th{background:var(--surface-2);font-weight:700;font-size:13px;white-space:nowrap}
+tbody th{font-weight:700;white-space:nowrap}
+td.num,th.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.t-perm{min-width:860px}
+.t-comp{min-width:900px}
+.t-pick{min-width:820px}
+.t-price{min-width:760px}
+.chip{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;line-height:20px;font-weight:500;white-space:nowrap;margin-right:4px}
+.y{background:var(--ok-soft);color:var(--ok)}
+.n{background:var(--no-soft);color:var(--no)}
+.p{background:var(--money-soft);color:var(--money)}
+/* code */
+pre{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.6;margin:8px 0 16px}
+pre code{font-size:inherit}
+/* steps */
+ol.steps{list-style:none;counter-reset:s;margin:12px 0 18px;padding:0;max-width:46em}
+ol.steps li{counter-increment:s;position:relative;padding:0 0 12px 40px}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:13px;display:flex;align-items:center;justify-content:center}
+ol.steps li.gate::before{background:var(--accent);color:var(--surface)}
+/* paths */
+.paths{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin:16px 0}
+.path{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:16px;min-width:0}
+.path .risk{font-size:12px;font-family:var(--mono);color:var(--muted);margin:0 0 6px}
+.path ul{margin:8px 0 0;padding-left:1.2em;font-size:14.5px}
+.path li{margin-bottom:6px}
+/* ladder */
+.ladder{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:16px 0 8px;list-style:none;padding:0}
+@media (min-width:900px){.ladder{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.ladder li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0;position:relative}
+.ladder .lv{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.ladder .nm{font-weight:700;margin:2px 0}
+.ladder .pr{font-family:var(--mono);font-size:12.5px;color:var(--money)}
+.ladder .why{font-size:13.5px;color:var(--muted);margin-top:6px;line-height:1.55}
+/* dev loop */
+.track{list-style:none;margin:16px 0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.track li{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.track li:last-child{border-bottom:0}
+@media (min-width:760px){.track li{grid-template-columns:86px minmax(0,1.3fr) minmax(0,1fr);gap:16px}}
+.track .st{font-weight:700}
+.track .gap{color:var(--no);font-size:14px}
+.track .give{font-size:14.5px}
+.track li.broken{background:var(--no-soft)}
+.callout{border-left:3px solid var(--accent);background:var(--surface);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0;max-width:46em;font-size:15px}
+.callout.warn{border-left-color:var(--money)}
+.pattern{list-style:none;margin:12px 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:0 28px}
+.pattern li{padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.pattern li b{display:block}
+.pattern .src{display:block;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.principles{list-style:none;margin:16px 0;padding:0;border-top:1px solid var(--line)}
+.principles li{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:18px 0;border-bottom:1px solid var(--line)}
+@media (min-width:760px){.principles li{grid-template-columns:180px minmax(0,1fr);gap:24px}}
+.principles h4{font-family:var(--serif);font-size:19px;margin:0}
+.principles p{margin:0 0 6px}
+.principles .ev{font-size:13px;color:var(--muted);margin:0}
+.sources{columns:1;font-size:14px}
+@media (min-width:860px){.sources{columns:2;column-gap:40px}}
+.sources h4{break-after:avoid;margin-top:12px}
+.sources ul{margin:0 0 12px;padding-left:1.1em}
+.sources li{margin-bottom:6px;break-inside:avoid}
+footer{font-size:13px;color:var(--muted);padding-top:8px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+section[id]{scroll-margin-top:24px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="hero">
+  <div class="eyebrow">产品调研 · 2026-10-21</div>
+  <h1>币安智能拆解</h1>
+  <p class="sub">币安 AI · 币安 AI Pro · 币安 Agent OS</p>
+  <p class="dek">同一套产品，站在两个位置看。作为交易用户：它能替你做什么、边界在哪、要花多少钱。作为交易软件开发者：开放了哪些接口、权限怎么设计、钱从哪里来、你能从哪里赚。</p>
+  <p class="meta">资料截至 2026-10-21：官方页面与 FAQ、开发者文档（llms-full.txt 全量 851 篇）、GitHub binance-skills-hub 源码、对 MCP 端点的匿名探测、发布会报道。本次未登录币安账号，AI Pro 与币安 AI 的界面细节来自官方 FAQ、新闻稿和媒体报道。</p>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="目录">
+  <p class="toc-h">目录</p>
+  <ol>
+    <li><a href="#tldr">五个判断</a></li>
+    <li><a href="#overview">产品全景</a></li>
+    <li><a href="#map">结构图</a></li>
+    <li><a href="#design">设计理念</a></li>
+    <li><a href="#user">用户视角</a></li>
+    <li><a href="#dev">开发者视角</a></li>
+    <li><a href="#money">收付费</a></li>
+    <li><a href="#risk">竞品与风险</a></li>
+    <li><a href="#sources">资料来源</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="tldr">
+  <h2><span class="sec-tag">TL;DR</span>五个判断</h2>
+  <ul class="findings">
+    <li><b>三层能力阶梯</b><span>币安 AI 负责看懂市场（免费，只读），AI Pro 负责把想法变成会自己运行的策略（免费增值），Agent OS 负责让你自己的 Agent 接进来（免费）。入口分别是 App、网页策略画布和外部 AI 客户端，覆盖从新手到开发者。</span></li>
+    <li><b>同一套保险丝</b><span>凡是能动钱的路径，都用独立子账户或独立 MPC 钱包，资金只能人工转入，没有提现权限，写操作逐笔确认，规则只能在网页或 App 修改，另有一键急停。你的最大损失约等于你转进去的钱。</span></li>
+    <li><b>AI 本身几乎不赚钱</b><span>Agent OS 全免费，AI Pro 免费档就能部署实盘，Premium 只要 19.99 USDC/月。回收发生在交易手续费、链上成交费、预测市场、代币化股票和稳定币流量上。连链上信号的回测次数都按 30 日交易量发放。</span></li>
+    <li><b>协议优先，不抢入口</b><span>MCP、SKILL.md、llms.txt，以及与 Coinbase x402 v2 字段级兼容的 B402。Claude、ChatGPT、Codex 是入口，币安做它们背后的金融执行层。</span></li>
+    <li><b>开发者的钱路很窄</b><span>公开渠道只有两条：用自己的 API Key 接入并在订单 ID 打 Link ID 标签拿 30–50% 返佣，或用 x402 按次卖数据和工具。官方 MCP 与 Skills 文档里没有归因或分成机制，经 MCP 产生的交易量归币安。</span></li>
+  </ul>
+</section>
+
+<section id="overview">
+  <h2><span class="sec-tag">01 · 全景</span>一个生态，三款产品</h2>
+  <p class="lead">官方的说法：币安 AI 帮用户了解市场，币安 AI Pro 根据用户意愿把想法转化为策略，Agent OS 让开发者基于币安的金融能力进行构建。三者合称“币安智能”（Binance Intelligence），覆盖加密货币、股票及代币化股票，7×24 小时运行。</p>
+  <div class="cards">
+    <article class="card">
+      <h4>币安 AI</h4>
+      <p class="pos">主动型 AI 助手：内置市场分析，按你的情况推送洞察</p>
+      <dl>
+        <dt>入口</dt><dd>币安 App（For You 标签）</dd>
+        <dt>价格</dt><dd>免费</dd>
+        <dt>状态</dt><dd>10 月 5 日起按地区推出</dd>
+        <dt>能做</dt><dd>个性化界面、Market Brief、异动提醒、PnL 复盘</dd>
+        <dt>不做</dt><dd>不执行交易</dd>
+      </dl>
+    </article>
+    <article class="card">
+      <h4>币安 AI Pro</h4>
+      <p class="pos">金融领域的智能体：从提示词到执行</p>
+      <dl>
+        <dt>入口</dt><dd>网页 ai.binance.com（策略画布）与 App（对话）</dd>
+        <dt>价格</dt><dd>Standard 免费；Premium 19.99 USDC/月</dd>
+        <dt>状态</dt><dd>10 月 19 日正式版（Beta 自 3 月 25 日）</dd>
+        <dt>能做</dt><dd>生成工作流、代码测试、模拟盘、子账户实盘（现货、U 本位合约）</dd>
+        <dt>不做</dt><dd>首发无历史回测，不评估盈利性</dd>
+      </dl>
+    </article>
+    <article class="card os">
+      <h4>币安 Agent OS</h4>
+      <p class="pos">面向外部智能体的开发者工具包</p>
+      <dl>
+        <dt>入口</dt><dd>binance.com/agent-os、开发者文档、GitHub</dd>
+        <dt>价格</dt><dd>免费</dd>
+        <dt>状态</dt><dd>8 月 20 日发布</dd>
+        <dt>组成</dt><dd>MCP Server、Skills Hub、交易 API、Agentic Wallet、Web3 API、x402</dd>
+        <dt>边界</dt><dd>无提现权限，独立子账户或钱包</dd>
+      </dl>
+    </article>
+  </div>
+
+  <h3>时间线</h3>
+  <ol class="tl">
+    <li><time>2025</time><span>Binance Ai 开始小范围分阶段上线（AI Pro Beta 新闻稿回溯）。</span></li>
+    <li><time>2026-03-03</time><span>GitHub 仓库 binance/binance-skills-hub 创建。</span></li>
+    <li class="key"><time>2026-03-25</time><span>AI Pro Beta：基于开源 OpenClaw，接入 ChatGPT、Claude、Qwen、MiniMax、Kimi；9.99 美元/月（标价 29.99），每月 500 万积分，7 天试用。</span></li>
+    <li><time>2026-04-08</time><span>官方 binance skill 1.0（驱动 binance-cli）；4 月 11 日扩展到 20 多条产品线。</span></li>
+    <li><time>2026-07-14</time><span>B402 结算改为异步返回，接入方必须轮询，属于破坏性变更。</span></li>
+    <li><time>08-17 至 09-01</time><span>bStock AI 交易大赛：用 Agentic Wallet 交易代币化美股，参赛门槛包含 x402 付费调用，奖池最高 10 万 USDC。</span></li>
+    <li class="key"><time>2026-08-20</time><span>Agent OS 发布。</span></li>
+    <li><time>2026-09-07</time><span>币安 AI 开始内测。</span></li>
+    <li><time>2026-10 上旬</time><span>Binance Global Policy 发布论文《Know Your Agent: Building the Compliance Layer for Agentic Finance》。</span></li>
+    <li class="key"><time>2026-10-05</time><span>直播发布“币安智能”（联席 CEO Richard Teng、产品副总裁 Jeff Li）；币安 AI 在新西兰首发。</span></li>
+    <li><time>2026-10-12</time><span>币安 AI 扩大推出。</span></li>
+    <li class="key"><time>2026-10-19</time><span>AI Pro 正式版：Standard 免费，Premium 19.99 USDC/月。</span></li>
+    <li><time>2026-10-20</time><span>MCP 文档最近一次更新；Skills Hub 仓库最近一次推送。</span></li>
+  </ol>
+</section>
+
+<section id="map">
+  <h2><span class="sec-tag">02 · 结构</span>从入口到成交的五层</h2>
+  <p>按“从哪进来、谁在思考、走什么接口、钱放在哪、在哪成交”摊开。关键不在方框，在连线：哪条线能下单，哪条线只读，钱从哪条线进来。</p>
+  <figure>
+    <div class="fig-panel w-760">
+      <svg class="dg" viewBox="0 0 1120 540" role="img" aria-label="币安智能结构图：三款产品经由各自的接口落到独立子账户或钱包，资金只能从主账户人工划入，最终在币安交易所或链上成交">
+        <defs>
+          <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="mam" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-m" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <text class="rowlab" x="16" y="48">入口</text>
+        <text class="rowlab" x="16" y="132">产品</text>
+        <text class="rowlab" x="16" y="222">引擎 / 接口</text>
+        <text class="rowlab" x="16" y="336">账户与钱包</text>
+        <text class="rowlab" x="16" y="492">执行场所</text>
+
+        <rect class="box" x="120" y="20" width="176" height="48" rx="8"/>
+        <text class="t1" x="208" y="49" text-anchor="middle">币安 App</text>
+        <rect class="box" x="312" y="20" width="196" height="48" rx="8"/>
+        <text class="t1" x="410" y="49" text-anchor="middle">ai.binance.com · App</text>
+        <rect class="box" x="540" y="20" width="564" height="48" rx="8"/>
+        <text class="t1" x="822" y="39" text-anchor="middle">你自带的 AI 客户端</text>
+        <text class="t2" x="822" y="58" text-anchor="middle">Claude Code · Claude Desktop · Codex · ChatGPT · VS Code · Grok · Cursor · OpenClaw</text>
+
+        <line class="edge" x1="208" y1="68" x2="208" y2="99" marker-end="url(#ma)"/>
+        <line class="edge" x1="410" y1="68" x2="410" y2="99" marker-end="url(#ma)"/>
+        <line class="edge" x1="822" y1="68" x2="822" y2="99" marker-end="url(#ma)"/>
+
+        <rect class="box" x="120" y="100" width="176" height="56" rx="8"/>
+        <text class="t1" x="208" y="123" text-anchor="middle">币安 AI</text>
+        <text class="t2" x="208" y="143" text-anchor="middle">免费 · 只读，不下单</text>
+        <rect class="box" x="312" y="100" width="196" height="56" rx="8"/>
+        <text class="t1" x="410" y="123" text-anchor="middle">币安 AI Pro</text>
+        <text class="t2" x="410" y="143" text-anchor="middle">免费增值 · 想法 → 策略 → 实盘</text>
+        <rect class="box-a" x="540" y="100" width="564" height="56" rx="8"/>
+        <text class="t1" x="822" y="123" text-anchor="middle">币安 Agent OS</text>
+        <text class="t2" x="822" y="143" text-anchor="middle">免费 · 外部 Agent 的开发者工具包</text>
+
+        <line class="edge" x1="208" y1="156" x2="208" y2="191" marker-end="url(#ma)"/>
+        <line class="edge" x1="410" y1="156" x2="410" y2="191" marker-end="url(#ma)"/>
+        <line class="edge" x1="604" y1="156" x2="604" y2="191" marker-end="url(#ma)"/>
+        <line class="edge" x1="744" y1="156" x2="744" y2="191" marker-end="url(#ma)"/>
+        <line class="edge" x1="898" y1="156" x2="898" y2="191" marker-end="url(#ma)"/>
+        <line class="edge" x1="1046" y1="156" x2="1046" y2="191" marker-end="url(#ma)"/>
+
+        <rect class="box" x="120" y="192" width="176" height="52" rx="8"/>
+        <text class="t1s" x="208" y="213" text-anchor="middle">生成式 UI</text>
+        <text class="t2" x="208" y="232" text-anchor="middle">Brief · 提醒 · 复盘</text>
+        <rect class="box" x="312" y="192" width="196" height="52" rx="8"/>
+        <text class="t1s" x="410" y="213" text-anchor="middle">金融 Agent 编排</text>
+        <text class="t2" x="410" y="232" text-anchor="middle">策略画布 · 模拟盘</text>
+        <rect class="box" x="540" y="192" width="128" height="52" rx="8"/>
+        <text class="t1s" x="604" y="213" text-anchor="middle">MCP Server</text>
+        <text class="t2" x="604" y="232" text-anchor="middle">OAuth · scope</text>
+        <rect class="box" x="680" y="192" width="128" height="52" rx="8"/>
+        <text class="t1s" x="744" y="213" text-anchor="middle">binance skill</text>
+        <text class="t2" x="744" y="232" text-anchor="middle">CLI · API Key</text>
+        <rect class="box" x="840" y="192" width="116" height="52" rx="8"/>
+        <text class="t1s" x="898" y="213" text-anchor="middle">钱包 Skills</text>
+        <text class="t2" x="898" y="232" text-anchor="middle">baw CLI</text>
+        <rect class="box" x="988" y="192" width="116" height="52" rx="8"/>
+        <text class="t1s" x="1046" y="213" text-anchor="middle">B402 / x402</text>
+        <text class="t2" x="1046" y="232" text-anchor="middle">Facilitator</text>
+
+        <rect class="cont" x="112" y="280" width="704" height="140" rx="10"/>
+        <text class="t2" x="124" y="296">你的币安账户</text>
+        <rect class="cont" x="832" y="280" width="280" height="140" rx="10"/>
+        <text class="t2" x="844" y="296">链上地址</text>
+
+        <line class="edge ro" x1="208" y1="244" x2="208" y2="303" marker-end="url(#ma)"/>
+        <text class="lab" x="216" y="266">读持仓（需开启）</text>
+        <line class="edge" x1="410" y1="244" x2="410" y2="303" marker-end="url(#ma)"/>
+        <text class="lab" x="418" y="266">批准后执行</text>
+        <line class="edge" x1="604" y1="244" x2="604" y2="303" marker-end="url(#ma)"/>
+        <text class="lab" x="612" y="266">授权 scope</text>
+        <line class="edge" x1="744" y1="244" x2="744" y2="303" marker-end="url(#ma)"/>
+        <text class="lab" x="752" y="266">你的 API Key</text>
+        <line class="edge" x1="898" y1="244" x2="898" y2="303" marker-end="url(#ma)"/>
+        <text class="lab" x="906" y="266">App 扫码登录</text>
+        <line class="edge" x1="1046" y1="244" x2="1046" y2="303" marker-end="url(#ma)"/>
+        <text class="lab" x="1054" y="266">结算</text>
+
+        <rect class="box" x="120" y="304" width="176" height="56" rx="8"/>
+        <text class="t1s" x="208" y="327" text-anchor="middle">主账户</text>
+        <text class="t2" x="208" y="346" text-anchor="middle">资金来源</text>
+        <rect class="box" x="312" y="304" width="196" height="56" rx="8"/>
+        <text class="t1s" x="410" y="327" text-anchor="middle">AI Strategy Account</text>
+        <text class="t2" x="410" y="346" text-anchor="middle">虚拟子账户 · 每个策略一个</text>
+        <rect class="box" x="540" y="304" width="128" height="56" rx="8"/>
+        <text class="t1s" x="604" y="327" text-anchor="middle">Agentic 子账户</text>
+        <text class="t2" x="604" y="346" text-anchor="middle">virtual sub</text>
+        <rect class="box" x="680" y="304" width="128" height="56" rx="8"/>
+        <text class="t1s" x="744" y="327" text-anchor="middle">API Key 账户</text>
+        <text class="t2" x="744" y="346" text-anchor="middle">权限 = Key 配置</text>
+        <rect class="box" x="840" y="304" width="116" height="56" rx="8"/>
+        <text class="t1s" x="898" y="327" text-anchor="middle">Agentic Wallet</text>
+        <text class="t2" x="898" y="346" text-anchor="middle">MPC · 独立钱包</text>
+        <rect class="box" x="988" y="304" width="116" height="56" rx="8"/>
+        <text class="t1s" x="1046" y="327" text-anchor="middle">卖方收款地址</text>
+        <text class="t2" x="1046" y="346" text-anchor="middle">x402 商户</text>
+
+        <line class="edge" x1="956" y1="332" x2="986" y2="332" marker-end="url(#ma)"/>
+        <text class="lab" x="971" y="324" text-anchor="middle">付款</text>
+
+        <polyline class="edge m" points="180,360 180,392 580,392 580,362" marker-end="url(#mam)"/>
+        <polyline class="edge m" points="370,392 370,362" marker-end="url(#mam)"/>
+        <text class="lab lab-m" x="196" y="411">人工划转（免费）· Agent 无法从主账户取钱</text>
+
+        <line class="edge" x1="450" y1="360" x2="450" y2="455" marker-end="url(#ma)"/>
+        <text class="lab" x="458" y="443">现货 · U 本位</text>
+        <line class="edge" x1="630" y1="360" x2="630" y2="455" marker-end="url(#ma)"/>
+        <text class="lab" x="638" y="443">下单 · 无提现</text>
+        <line class="edge" x1="744" y1="360" x2="744" y2="455" marker-end="url(#ma)"/>
+        <text class="lab" x="752" y="443">全量 API</text>
+        <line class="edge" x1="898" y1="360" x2="898" y2="455" marker-end="url(#ma)"/>
+        <text class="lab" x="906" y="443">swap · 限价 · 预测 · DeFi</text>
+
+        <rect class="box" x="120" y="456" width="688" height="64" rx="8"/>
+        <text class="t1" x="464" y="482" text-anchor="middle">币安交易所</text>
+        <text class="t2" x="464" y="503" text-anchor="middle">现货 · 杠杆 · 闪兑 · U 本位 / 币本位合约 · 股票</text>
+        <rect class="box" x="840" y="456" width="264" height="64" rx="8"/>
+        <text class="t1" x="972" y="482" text-anchor="middle">链上：BSC · ETH · Base · Solana</text>
+        <text class="t2" x="972" y="503" text-anchor="middle">DEX · 预测市场 · DeFi · 稳定币结算</text>
+      </svg>
+    </div>
+    <figcaption>实线是调用和执行路径，虚线是只读，琥珀色是资金。AI Pro 和 MCP 各有专属子账户，和主账户之间只有一条人工划转线。MCP 另有可选的主账户只读视图，图中未画。binance skill 是唯一绕开子账户隔离的路径：它用你的 API Key，Key 能做什么它就能做什么。链上一侧，x402 付款从钱包直接到卖方地址，B402 只验签和代付 gas。</figcaption>
+  </figure>
+</section>
+
+<section id="design">
+  <h2><span class="sec-tag">03 · 设计理念</span>七条贯穿三款产品的原则</h2>
+  <ul class="principles">
+    <li><h4>能力阶梯</h4><div><p>按用户成熟度分三层，而不是一个产品做所有事。官方的目标是弥合普通用户与市场专业人士之间的知识鸿沟：新手在 For You 看到简化行情，老手直接进入现货、合约或股票界面；会写代码的人跳过界面，直接用 Agent OS。</p><p class="ev">依据：币安智能 FAQ；发布会报道对 For You 的描述。</p></div></li>
+    <li><h4>有界自治</h4><div><p>Agent 可以分析、建议、在额度内执行，后果性动作必须由人明确批准。AI Pro 上线要审批，改动要重新审批；MCP 的每个下单、撤单、划转都先复述，等你说 yes。这和币安政策团队《Know Your Agent》论文同源：自治不能超出可验证、可限制、可撤销的范围。</p><p class="ev">依据：AI Pro 新闻稿称其遵循该论文的 bounded autonomy 原则；MCP 文档 confirm-before-execute。</p></div></li>
+    <li><h4>隔离限定爆炸半径</h4><div><p>每个实盘策略一个子账户，每个外部 Agent 一个 Agentic 子账户，链上一个独立 MPC 钱包。权限列表里根本没有提现这一项，链上转账只能去地址簿里的地址。出了问题，损失上限是你转进去的金额。</p><p class="ev">依据：MCP 文档 “There is no withdrawal scope”；Agentic Hub FAQ。</p></div></li>
+    <li><h4>控制面放在带外</h4><div><p>规则不放在 Agent 能碰到的地方。钱包的日限额、代币范围、高风险处理只能在 App 修改，Agent 只能读；MCP 想改权限要断开重连、重新授权；急停按钮在网页。官方还专门提醒：不要把 MCP 端点贴给 AI 让它自己安装。</p><p class="ev">依据：Agentic Wallet 安装文档；MCP 文档 Troubleshooting。</p></div></li>
+    <li><h4>协议优先，自带 Agent</h4><div><p>币安没有要求开发者使用自家 Agent。MCP 走标准的 Streamable HTTP 和 OAuth；技能用通用的 SKILL.md 格式，Claude Code、OpenClaw 都能装；文档提供 llms.txt；B402 的 V2 报文与 Coinbase x402 规范逐字段兼容，换一个 URL 就能用。Skills Hub 的 README 写着 “Built by Binance. Built for everyone.”</p><p class="ev">依据：Agent Native 文档、B402 文档、GitHub README。</p></div></li>
+    <li><h4>白盒化</h4><div><p>AI Pro 把策略画成工作流，用户审的是一张流程图，不是一段提示词；上线前先跑自动代码测试和模拟盘。钱包侧的外部合约调用和签名分成 preview 与 execute 两步，先展示解析后的交易、风险和权限变化。</p><p class="ev">依据：AI Pro 新闻稿；baw SKILL.md 外部签名流程。</p></div></li>
+    <li><h4>责任外移</h4><div><p>这套设计的另一面是免责。用户对提示词和 Agent 行为负全部责任，提示词可能被用于训练，由用户或第三方配置的 AI 工具出了问题要向币安赔偿。产品副总裁 Jeff Li 对 TechCrunch 说，币安看不到用户操作背后的推理。</p><p class="ev">依据：页面免责声明；Finance Magnates 转引 TechCrunch。</p></div></li>
+  </ul>
+</section>
+
+<section id="user">
+  <h2><span class="sec-tag">04 · 用户视角</span>它能替你做什么，代价是什么</h2>
+  <p>三个问题：每个产品能替你做什么；钱放在哪、Agent 能碰到什么；一路升级要花多少钱。</p>
+
+  <h3>币安 AI：免费的主动型助手</h3>
+  <p>不等你提问，它根据持仓和使用习惯推送信息。定位是研究和监控，不执行交易。</p>
+  <div class="tw"><table>
+    <thead><tr><th>功能</th><th>做什么</th></tr></thead>
+    <tbody>
+      <tr><th>生成式 UI（For You）</th><td>按知识水平、兴趣、持仓和已使用的产品生成页面布局。新手看简化行情，老手直达现货、合约、股票界面。</td></tr>
+      <tr><th>Market Brief</th><td>加密与传统市场简报，每 4 小时刷新，可读也可听。</td></tr>
+      <tr><th>小组件</th><td>市场概览、市场洞察、个人追踪（持仓、提醒、PnL 复盘）。</td></tr>
+      <tr><th>语音提醒</th><td>关注的资产出现异动时提醒。</td></tr>
+      <tr><th>Master Trade</th><td>展示精选资深投资者的资产配置，可获得时包含持仓。</td></tr>
+      <tr><th>Smart Tool Tips</th><td>情境化的功能提示，报道未披露细节。</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">开启个性化后才会使用你的持仓、偏好和历史使用数据。按地区分批开放：9 月 7 日内测，10 月 5 日新西兰首发，10 月 12 日扩大推出。</p>
+
+  <h3>币安 AI Pro：把一句话变成会自己运行的策略</h3>
+  <p>你描述想法，它补齐参数、生成工作流，先测试、再模拟，最后在你批准后用独立子账户实盘。实际流程如下，实心圆是只有你能推进的步骤。</p>
+  <ol class="steps">
+    <li><b>描述。</b>用自己的话说出资产、条件、参数和风险限额。官方示例：“帮我了解这项资产”“给我看看怎么做加密货币和股票的多元配置”“监控我的投资组合是否有重大变化”。</li>
+    <li><b>补全。</b>Agent 指出缺失的信息，并优化策略。</li>
+    <li><b>可视化。</b>桌面端在对话旁显示策略画布（Strategy Canvas），可以查看每一步、改参数、增删模块、加批注；移动端只能通过对话修改。</li>
+    <li><b>代码测试。</b>自动检查逻辑能否正确执行，不评估能不能赚钱。</li>
+    <li><b>模拟盘。</b>用虚拟资金在模拟环境里运行。</li>
+    <li class="gate"><b>审批上线。</b>实盘需要单独的审核批准。</li>
+    <li class="gate"><b>注资。</b>手动把资金转进专属的 AI Strategy Account（虚拟子账户）。Agent 不能自己转钱。</li>
+    <li><b>运行与调整。</b>随时暂停、调整或撤销；任何修改都要重新批准。</li>
+  </ol>
+  <p>工作流不只是交易策略，也可以是每日报告、市场监控、订阅提醒和信号生成。首发支持现货和 U 本位合约（视地区），每人最多 10 个策略（模拟、实盘、信号合计），暂不提供历史回测。底层是大模型加上币安自建的金融 Agent 框架，数据来自币安行情与研究以及部分第三方来源。</p>
+  <div class="tw"><table class="t-price">
+    <thead><tr><th></th><th>Standard（默认）</th><th>Premium</th></tr></thead>
+    <tbody>
+      <tr><th>价格</th><td>免费</td><td class="num">19.99 USDC/月，经 Binance Pay 支付</td></tr>
+      <tr><th>每月积分</th><td class="num">250,000，每月刷新</td><td class="num">10,000,000，每月刷新</td></tr>
+      <tr><th>加购积分</th><td><span class="chip n">不可</span></td><td><span class="chip y">可以</span>加购部分不刷新，12 个月有效，月度额度用完后才扣</td></tr>
+      <tr><th>模型</th><td>默认模型</td><td>可选前沿模型：ChatGPT Sol、ChatGPT Astra、Claude Opus（视可用性）</td></tr>
+      <tr><th>查询、生成策略</th><td><span class="chip y">✓</span></td><td><span class="chip y">✓</span></td></tr>
+      <tr><th>模拟盘</th><td><span class="chip y">✓</span></td><td><span class="chip y">✓</span></td></tr>
+      <tr><th>部署实盘</th><td><span class="chip y">✓</span></td><td><span class="chip y">✓</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">10 月 5 日的一篇发布会报道（赞助内容）写的是模拟盘和实盘属于 Premium。以 10 月 19 日新闻稿和官网 FAQ 为准：两档都能模拟、都能实盘。Beta 用户可保留原订阅，可选择迁移聊天记录和策略；正式版的试用积分需要手动领取。</p>
+
+  <h3>用你自己的 Agent：三条路，安全性依次递减</h3>
+  <p>不想用币安的 AI，也可以让你已经在用的 Claude、ChatGPT 或 Codex 直接操作币安。</p>
+  <div class="paths">
+    <div class="path">
+      <p class="risk">路径 A · 风险最低</p>
+      <h4>MCP Server</h4>
+      <p class="small">在 Claude Code、Claude Desktop、Codex CLI、ChatGPT 网页版、ChatGPT/Codex 桌面版、VS Code、Grok 里对话交易。Claude Code 的接法：</p>
+      <pre><code>claude mcp add binance-mcp-server --transport http https://agent.binance.com/mcp/agentic</code></pre>
+      <ul>
+        <li>在 /mcp 菜单选中它，桌面浏览器登录币安并勾选权限；首次授权会自动创建 Agentic 子账户。</li>
+        <li>到 个人中心 › 仪表盘 › 子账户 › 资产管理 手动划转，免费、即时。</li>
+        <li>能做：行情、余额，现货、杠杆、闪兑、U 本位、币本位合约下单，子账户内钱包间划转。</li>
+        <li>不能：提现；从主账户拉钱。</li>
+      </ul>
+    </div>
+    <div class="path">
+      <p class="risk">路径 B · 链上</p>
+      <h4>Agentic Wallet</h4>
+      <p class="small">前提：Node.js 18+，先在币安 App 里创建 MPC 钱包。</p>
+      <pre><code>npx skills add binance/binance-skills-hub/skills/binance-web3/binance-agentic-wallet</code></pre>
+      <ul>
+        <li>对 Agent 说 “Sign in to Binance Agentic Wallet”，手机点链接或用 App 扫码确认。</li>
+        <li>能做：swap、限价单（BSC、Solana）、转账（仅地址簿）、预测市场、DeFi 存取与 LP、x402 付款、代币化股票（bStock、Ondo）。</li>
+        <li>官方建议的首次设置：日限额 50 美元，代币范围选 Limited，高风险交易设为需要 App 确认。</li>
+      </ul>
+    </div>
+    <div class="path">
+      <p class="risk">路径 C · 最灵活，风险最高</p>
+      <h4>binance skill + binance-cli</h4>
+      <p class="small">用你自己的 API Key 和 Secret（环境变量或 profile），覆盖 30 多条产品线，还能透传任意 REST 请求。官方 skill 要求生产环境交易前让你输入 CONFIRM。</p>
+      <ul>
+        <li>没有子账户隔离：Key 有什么权限，Agent 就有什么权限。</li>
+        <li>走这条路，就给 Key 关闭提现、绑定 IP，或者单独建一个子账户只给它用。</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>用户闭环</h3>
+  <figure>
+    <div class="fig-panel w-680">
+      <svg class="dg" viewBox="0 0 1000 370" role="img" aria-label="用户闭环八步：感知、提问、策略化、验证、授权、执行、监控、迭代；授权与迭代两步由人把守，提问到验证消耗积分，执行产生手续费">
+        <defs>
+          <marker id="mb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <rect class="box" x="40" y="30" width="200" height="80" rx="10"/>
+        <text class="t1" x="56" y="60">① 感知</text>
+        <text class="t2f" x="56" y="82">Market Brief · 异动提醒</text>
+        <text class="tag" x="56" y="100">币安 AI</text>
+
+        <rect class="box" x="290" y="30" width="200" height="80" rx="10"/>
+        <text class="t1" x="306" y="60">② 提问</text>
+        <text class="t2f" x="306" y="82">问行情、问持仓、问想法</text>
+        <text class="tag" x="306" y="100">币安 AI / AI Pro</text>
+        <rect class="chip" x="428" y="44" width="46" height="20" rx="10"/>
+        <text class="chip-t" x="451" y="58" text-anchor="middle">积分</text>
+
+        <rect class="box" x="540" y="30" width="200" height="80" rx="10"/>
+        <text class="t1" x="556" y="60">③ 策略化</text>
+        <text class="t2f" x="556" y="82">一句话 → 可视化工作流</text>
+        <text class="tag" x="556" y="100">AI Pro</text>
+        <rect class="chip" x="678" y="44" width="46" height="20" rx="10"/>
+        <text class="chip-t" x="701" y="58" text-anchor="middle">积分</text>
+
+        <rect class="box" x="790" y="30" width="200" height="80" rx="10"/>
+        <text class="t1" x="806" y="60">④ 验证</text>
+        <text class="t2f" x="806" y="82">代码测试 + 模拟盘</text>
+        <text class="tag" x="806" y="100">AI Pro</text>
+        <rect class="chip" x="928" y="44" width="46" height="20" rx="10"/>
+        <text class="chip-t" x="951" y="58" text-anchor="middle">积分</text>
+
+        <rect class="box-a" x="790" y="270" width="200" height="80" rx="10"/>
+        <text class="t1" x="806" y="300">⑤ 授权</text>
+        <text class="t2f" x="806" y="322">审批上线 + 手动注资</text>
+        <text class="tag" x="806" y="340">只有你能做</text>
+
+        <rect class="box" x="540" y="270" width="200" height="80" rx="10"/>
+        <text class="t1" x="556" y="300">⑥ 执行</text>
+        <text class="t2f" x="556" y="322">子账户 7×24 实盘</text>
+        <text class="tag" x="556" y="340">现货 · U 本位合约</text>
+        <rect class="chip" x="670" y="284" width="56" height="20" rx="10"/>
+        <text class="chip-t" x="698" y="298" text-anchor="middle">手续费</text>
+
+        <rect class="box" x="290" y="270" width="200" height="80" rx="10"/>
+        <text class="t1" x="306" y="300">⑦ 监控</text>
+        <text class="t2f" x="306" y="322">PnL 复盘 · 日报 · 提醒</text>
+        <text class="tag" x="306" y="340">币安 AI / AI Pro</text>
+
+        <rect class="box-a" x="40" y="270" width="200" height="80" rx="10"/>
+        <text class="t1" x="56" y="300">⑧ 迭代</text>
+        <text class="t2f" x="56" y="322">暂停 / 修改 / 撤销</text>
+        <text class="tag" x="56" y="340">修改须重新批准</text>
+
+        <line class="edge" x1="240" y1="70" x2="288" y2="70" marker-end="url(#mb)"/>
+        <line class="edge" x1="490" y1="70" x2="538" y2="70" marker-end="url(#mb)"/>
+        <line class="edge" x1="740" y1="70" x2="788" y2="70" marker-end="url(#mb)"/>
+        <line class="edge" x1="890" y1="110" x2="890" y2="268" marker-end="url(#mb)"/>
+        <line class="edge" x1="790" y1="310" x2="742" y2="310" marker-end="url(#mb)"/>
+        <line class="edge" x1="540" y1="310" x2="492" y2="310" marker-end="url(#mb)"/>
+        <line class="edge" x1="290" y1="310" x2="242" y2="310" marker-end="url(#mb)"/>
+        <line class="edge" x1="140" y1="270" x2="140" y2="112" marker-end="url(#mb)"/>
+
+        <text class="t1s" x="515" y="168" text-anchor="middle">人把守两个阀门：⑤ 批准并注资，⑧ 改动须重审</text>
+        <text class="t2f" x="515" y="196" text-anchor="middle">收费点：②–④ 消耗积分，⑥ 产生交易手续费</text>
+        <text class="t2" x="515" y="222" text-anchor="middle">每转一圈，信任、注资和交易量一起上升</text>
+      </svg>
+    </div>
+    <figcaption>八步闭环，前四步在 AI 里转，后四步碰真钱。不批准、不注资，Agent 就碰不到资金；任何修改都会把策略打回 ⑤。运行中的工作流同样消耗积分（Beta 期积分用完会降级运行，不会停机），每笔成交照常收手续费。</figcaption>
+  </figure>
+
+  <h4>升级阶梯</h4>
+  <ol class="ladder">
+    <li><div class="lv">第 1 级</div><div class="nm">币安 AI</div><div class="pr">免费</div><div class="why">想看懂行情和自己的持仓。</div></li>
+    <li><div class="lv">第 2 级</div><div class="nm">AI Pro Standard</div><div class="pr">免费 · 25 万积分/月</div><div class="why">想把想法变成自动策略，先模拟、再小额实盘。</div></li>
+    <li><div class="lv">第 3 级</div><div class="nm">AI Pro Premium</div><div class="pr">19.99 USDC/月 · 1000 万积分</div><div class="why">积分不够用，或想换前沿模型。</div></li>
+    <li><div class="lv">第 4 级</div><div class="nm">加购积分</div><div class="pr">按需购买 · 12 个月有效</div><div class="why">当月额度用完。</div></li>
+    <li><div class="lv">第 5 级</div><div class="nm">自带 Agent</div><div class="pr">Agent OS · 免费</div><div class="why">想用自己的 Claude、ChatGPT，做链上操作，或自己写策略代码。</div></li>
+  </ol>
+  <p class="small muted">每一级的触发点都是需求变重，而不是功能被锁。实盘放在免费档，说明币安要的是更多资金进入能被 Agent 7×24 交易的子账户。</p>
+
+  <h3>Agent 能碰到什么</h3>
+  <div class="tw"><table class="t-perm">
+    <thead><tr><th></th><th>币安 AI</th><th>AI Pro</th><th>MCP Server</th><th>Agentic Wallet</th><th>binance skill + API Key</th></tr></thead>
+    <tbody>
+      <tr><th>读行情</th><td><span class="chip y">✓</span></td><td><span class="chip y">✓</span></td><td><span class="chip y">✓</span>无需授权</td><td><span class="chip y">✓</span></td><td><span class="chip y">✓</span></td></tr>
+      <tr><th>读主账户</th><td><span class="chip p">部分</span>开启个性化后读持仓</td><td class="muted">未披露</td><td><span class="chip p">可选</span>只读视图</td><td class="muted">不涉及，独立钱包</td><td><span class="chip p">看 Key</span></td></tr>
+      <tr><th>下单范围</th><td><span class="chip n">✗</span>不下单</td><td>现货、U 本位合约</td><td>现货、杠杆、闪兑、U 本位、币本位</td><td>DEX swap、限价、预测市场、DeFi</td><td>Key 允许的全部</td></tr>
+      <tr><th>资金来源</th><td>—</td><td>只能人工转入</td><td>只能人工转入</td><td>你自己往钱包里转</td><td><span class="chip n">风险</span>Key 所在账户的全部资金</td></tr>
+      <tr><th>对外转出</th><td><span class="chip n">✗</span></td><td><span class="chip n">✗</span>只在自己账户间</td><td><span class="chip n">✗</span>没有提现 scope</td><td><span class="chip p">受限</span>仅地址簿地址</td><td><span class="chip n">风险</span>Key 开了提现就能提</td></tr>
+      <tr><th>确认方式</th><td>—</td><td>上线前审批，改动重审</td><td>每个写操作先复述，等你说 yes</td><td>状态变更前确认；高风险可要求 App 确认</td><td>skill 要求输入 CONFIRM</td></tr>
+      <tr><th>规则在哪改</th><td>—</td><td>AI Pro 内</td><td>断开后重新授权</td><td>只能在 App</td><td>API 管理页</td></tr>
+      <tr><th>急停</th><td>—</td><td>暂停或撤销策略</td><td>Emergency stop：断开所有 Agent，撤销全部订单与仓位</td><td>Sign out 撤销会话</td><td>删除 Key</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>作为用户的使用建议</h3>
+  <ul class="clean">
+    <li>先用免费档跑通全流程：币安 AI 看市场，AI Pro Standard 生成策略、模拟，再小额实盘。Premium 等积分不够或需要前沿模型时再买。</li>
+    <li>子账户和 Agentic Wallet 里只放你愿意交给 Agent 试错的钱。钱包首次使用按官方建议设小日限额、Limited 代币范围、高风险需 App 确认。</li>
+    <li>AI Pro 目前没有历史回测，代码测试通过只代表逻辑能跑，不代表策略有效。模拟盘多跑一段时间，覆盖几种行情再上线。</li>
+    <li>合约策略的杠杆和强平风险由你承担。官方文档写明 AI 可能基于过时或幻觉信息下错参数，下单前核对复述的订单。</li>
+    <li>提示词可能被用于训练。不要在对话里写身份证号、密码、助记词之类的信息。</li>
+    <li>不要把 MCP 端点贴进聊天让 AI 自己装，也不要在浏览器里直接打开它，按官方的客户端步骤操作。</li>
+    <li>记住急停位置：个人中心 › 仪表盘 › 子账户 › 账户管理 › Emergency stop。</li>
+  </ul>
+</section>
+
+<section id="dev">
+  <h2><span class="sec-tag">05 · 开发者视角</span>积木、鉴权、选型和闭环</h2>
+  <p>四个问题：有哪些积木；各自怎么鉴权；你的产品该走哪条路；以及能从中赚到什么。</p>
+
+  <h3>Agent OS 的积木</h3>
+  <div class="tw"><table class="t-comp">
+    <thead><tr><th>组件</th><th>做什么</th><th>怎么接</th><th>鉴权</th><th>状态与成本</th></tr></thead>
+    <tbody>
+      <tr><th>Binance MCP Server</th><td>远程 MCP：行情、余额、现货 / 杠杆 / 闪兑 / U 本位 / 币本位下单、子账户内划转</td><td><code>https://agent.binance.com/mcp/agentic</code>（Streamable HTTP）</td><td>OAuth 2.1 授权码 + PKCE；公共客户端；scope 分 Market / Account / Trade / Transfer</td><td>免费；授权需在桌面端完成</td></tr>
+      <tr><th>Skills Hub</th><td>21 个技能。币安官方 7 个：CEX 交易、法币、P2P、支付、Onchain Pay、学院、广场发帖。Web3 团队 14 个：钱包、信号、聪明钱追踪、排行榜、Meme、代币审计、代币化股票、预测市场与跟单脚手架等</td><td><code>npx skills add https://github.com/binance/binance-skills-hub</code></td><td>按技能：公开接口免鉴权、API Key 或 baw 会话</td><td>免费，MIT；上架前安全审核；GitHub 1,073 星、244 fork</td></tr>
+      <tr><th>binance-cli v2 + binance skill</th><td>30 多条产品线的命令，外加任意 REST 透传（<code>binance-cli request</code>）</td><td>官方安装脚本；profile 区分 prod / testnet / demo</td><td>API Key / Secret</td><td>免费</td></tr>
+      <tr><th>交易 API</th><td>REST、WebSocket、FIX、SBE；Python、JS、Go、Java、PHP、Rust、Ruby、.NET 连接器；Postman 合集</td><td>api.binance.com 等</td><td>API Key，提供非对称密钥生成工具</td><td>免费</td></tr>
+      <tr><th>llms.txt</th><td>给 AI 读的文档：索引 175 KB，全文 8.3 MB（851 篇）</td><td><code>/en/docs/llms.txt</code>、<code>llms-full.txt</code></td><td>无</td><td>免费</td></tr>
+      <tr><th>Agentic Wallet + baw</th><td>MPC 钱包：swap、限价、转账、预测市场、DeFi、代币授权管理、x402 付款、开发者模式合约调用与 EIP-712 签名、加速或取消交易</td><td>npm 包 <code>@binance/agentic-wallet</code>；BSC、Ethereum、Base、Solana</td><td>App 扫码登录；规则只能在 App 设置</td><td>链上 gas 与成交费；永续合约“即将推出”</td></tr>
+      <tr><th>Web3 API</th><td>链上数据与 DeFi 访问</td><td>web3.binance.com/dev-portal</td><td>—</td><td>—</td></tr>
+      <tr><th>Binance x402（B402）</th><td>x402 Facilitator：<code>/supported</code>、<code>/verify</code>、<code>/settle</code>，外加 Bazaar 发现层</td><td>表单申请；Sandbox 与生产分别下发 clientId、accessToken</td><td>RSA 签名请求头；IP 白名单</td><td>测试网开放，主网按申请开通；文档未列手续费，Bazaar 免费</td></tr>
+      <tr><th>Binance for ChatGPT</th><td>在 ChatGPT 内查询公开行情（现货、合约、期权）</td><td>ChatGPT 应用</td><td>无</td><td>只读，不能交易</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>你的产品该走哪条路</h3>
+  <div class="tw"><table class="t-pick">
+    <thead><tr><th>你的场景</th><th>走哪条</th><th>好处</th><th>代价</th></tr></thead>
+    <tbody>
+      <tr><td>你或你的用户已在用 Claude、ChatGPT、Codex，想直接对话交易</td><td><b>MCP Server</b></td><td>本地不存密钥；权限、子账户、急停全由币安托管；接入是一行命令</td><td>只覆盖 CEX 交易与子账户内划转；文档里没有归因和返佣</td></tr>
+      <tr><td>多用户交易软件、量化平台、bot 平台</td><td><b>交易 API + OMS Toolkit（Link ID）</b></td><td>API 全量；订单可按用户、策略、bot 打标；符合条件可拿 30–50% 返佣</td><td>你要保管用户的 API Key，安全与合规责任在你</td></tr>
+      <tr><td>产品要做链上操作</td><td><b>Agentic Wallet 技能 + baw</b></td><td>MPC 无私钥；规则在 App；转账只到地址簿</td><td>滑点、MEV、合约风险；限价单仅 BSC、Solana；永续未上线</td></tr>
+      <tr><td>有数据、信号、模型，想按次卖给 Agent</td><td><b>B402 + Bazaar</b></td><td>不用建账户和订阅体系；钱直接到你的地址；gas 代付；结算后 30–60 秒进入发现目录</td><td>仅 BSC；四种稳定币；主网要申请；合规与风控自理</td></tr>
+      <tr><td>让编码 Agent 帮你写币安集成</td><td><b>llms.txt / llms-full.txt</b></td><td>一次给到全量、最新的文档，少猜接口</td><td>全文 8 MB，需要分块或检索</td></tr>
+      <tr><td>想让更多 Agent 用户用上你的能力</td><td><b>向 Skills Hub 提 PR</b></td><td>官方分发渠道，上架后被 <code>npx skills add</code> 一并安装</td><td>不得推荐任何代币；仓库没有付费或分成机制</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>MCP 的授权链路</h3>
+  <p>不带 token 请求端点，会拿到标准的 401 和 OAuth 元数据。下图是据此还原的完整授权过程。</p>
+  <figure>
+    <div class="fig-panel w-760">
+      <svg class="dg" viewBox="0 0 960 460" role="img" aria-label="MCP 授权时序：客户端先收到 401，读取 OAuth 元数据，经币安账户授权页用 PKCE 换取 token，之后带 token 调用工具，写操作需要用户在对话里确认">
+        <defs>
+          <marker id="md" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <rect class="box" x="10" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="100" y="35" text-anchor="middle">AI 客户端</text>
+        <text class="t2" x="100" y="52" text-anchor="middle">Claude Code 等</text>
+        <rect class="box-a" x="270" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="360" y="35" text-anchor="middle">MCP 网关</text>
+        <text class="t2" x="360" y="52" text-anchor="middle">agent.binance.com</text>
+        <rect class="box" x="530" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="620" y="35" text-anchor="middle">授权服务</text>
+        <text class="t2" x="620" y="52" text-anchor="middle">accounts.binance.com</text>
+        <rect class="box" x="770" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="860" y="35" text-anchor="middle">你</text>
+        <text class="t2" x="860" y="52" text-anchor="middle">桌面浏览器</text>
+
+        <line class="life" x1="100" y1="60" x2="100" y2="392"/>
+        <line class="life" x1="360" y1="60" x2="360" y2="392"/>
+        <line class="life" x1="620" y1="60" x2="620" y2="392"/>
+        <line class="life" x1="860" y1="60" x2="860" y2="392"/>
+
+        <line class="edge" x1="100" y1="96" x2="358" y2="96" marker-end="url(#md)"/>
+        <text class="lab-c" x="230" y="89" text-anchor="middle">POST /mcp/agentic（无 token）</text>
+        <line class="edge ro" x1="360" y1="136" x2="102" y2="136" marker-end="url(#md)"/>
+        <text class="lab-c" x="230" y="129" text-anchor="middle">401 · resource_metadata</text>
+        <line class="edge" x1="100" y1="176" x2="358" y2="176" marker-end="url(#md)"/>
+        <text class="lab-c" x="230" y="169" text-anchor="middle">GET /.well-known/oauth-*</text>
+        <line class="edge" x1="100" y1="216" x2="618" y2="216" marker-end="url(#md)"/>
+        <text class="lab-c" x="360" y="209" text-anchor="middle">authorize · PKCE S256 · 无 client secret</text>
+        <line class="edge" x1="620" y1="256" x2="858" y2="256" marker-end="url(#md)"/>
+        <text class="lab-c" x="740" y="249" text-anchor="middle">登录 · 勾选 scope · 首次建子账户</text>
+        <line class="edge ro" x1="860" y1="296" x2="622" y2="296" marker-end="url(#md)"/>
+        <text class="lab-c" x="740" y="289" text-anchor="middle">同意授权</text>
+        <line class="edge ro" x1="620" y1="336" x2="102" y2="336" marker-end="url(#md)"/>
+        <text class="lab-c" x="360" y="329" text-anchor="middle">code 换 token</text>
+        <line class="edge" x1="100" y1="376" x2="358" y2="376" marker-end="url(#md)"/>
+        <text class="lab-c" x="230" y="369" text-anchor="middle">tools/call + Bearer</text>
+
+        <rect class="note" x="40" y="404" width="880" height="40" rx="8"/>
+        <text class="t2f" x="480" y="429" text-anchor="middle">读操作直接返回；写操作由 Agent 先复述订单，你回复 yes 才发送；token 过期需断开重连</text>
+      </svg>
+    </div>
+    <figcaption>实线是请求，虚线是响应或用户动作。整个过程没有 API Key 落到你的设备上，权限在授权页一次选定。</figcaption>
+  </figure>
+  <pre><code>$ curl -X POST https://agent.binance.com/mcp/agentic        # 不带 token，2026-10-21 探测
+HTTP/2 401
+www-authenticate: Bearer resource_metadata="https://agent.binance.com/.well-known/oauth-protected-resource/gateway-mcp"
+
+# 授权服务器元数据（节选）
+authorization_endpoint            https://accounts.binance.com/agentic-oauth/authorize
+token_endpoint                    https://accounts.binance.com/oauth-agentic/token
+grant_types_supported             ["authorization_code"]
+code_challenge_methods_supported  ["S256"]
+token_endpoint_auth_methods       ["none"]
+client_id_metadata_document_supported  true</code></pre>
+  <ul class="clean">
+    <li>公共客户端加 PKCE，没有 client secret；支持 Client ID Metadata Document，客户端不必预先注册。这是 MCP 最新授权规范的做法，任何合规的 MCP 客户端都能接，理论上也包括你自己的交易软件，但官方文档只列了通用 AI 客户端。</li>
+    <li>只声明了 authorization_code，没有 refresh_token，所以过期后要断开重连，和文档的排障说明一致。</li>
+    <li>权限在授权页一次选定，改权限只能断开重连。放到你的产品里，就是“权限升级”应该设计成一次重新授权，而不是让 Agent 自己申请。</li>
+  </ul>
+
+  <h3>x402 / B402：让 Agent 按次付钱</h3>
+  <figure>
+    <div class="fig-panel w-760">
+      <svg class="dg" viewBox="0 0 960 540" role="img" aria-label="x402 支付时序：买方请求资源收到 402，离线签名后重发，卖方调用 B402 验签和结算，B402 代付 gas 在 BSC 上把稳定币从买方直接转给卖方，卖方再返回资源">
+        <defs>
+          <marker id="me" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="mem" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-m" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <rect class="box" x="10" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="100" y="35" text-anchor="middle">买方 Agent</text>
+        <text class="t2" x="100" y="52" text-anchor="middle">Agentic Wallet 等</text>
+        <rect class="box" x="270" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="360" y="35" text-anchor="middle">卖方 API</text>
+        <text class="t2" x="360" y="52" text-anchor="middle">你的服务器</text>
+        <rect class="box-a" x="530" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="620" y="35" text-anchor="middle">B402</text>
+        <text class="t2" x="620" y="52" text-anchor="middle">Facilitator</text>
+        <rect class="box" x="770" y="16" width="180" height="44" rx="8"/>
+        <text class="t1s" x="860" y="35" text-anchor="middle">BNB Smart Chain</text>
+        <text class="t2" x="860" y="52" text-anchor="middle">eip155:56</text>
+
+        <line class="life" x1="100" y1="60" x2="100" y2="470"/>
+        <line class="life" x1="360" y1="60" x2="360" y2="470"/>
+        <line class="life" x1="620" y1="60" x2="620" y2="470"/>
+        <line class="life" x1="860" y1="60" x2="860" y2="470"/>
+
+        <line class="edge" x1="100" y1="96" x2="358" y2="96" marker-end="url(#me)"/>
+        <text class="lab-c" x="230" y="89" text-anchor="middle">① 请求付费资源</text>
+        <line class="edge ro" x1="360" y1="136" x2="102" y2="136" marker-end="url(#me)"/>
+        <text class="lab-c" x="230" y="129" text-anchor="middle">② HTTP 402 + 支付要求</text>
+        <polyline class="edge" points="100,164 150,164 150,186 104,186" marker-end="url(#me)"/>
+        <text class="lab-c" x="160" y="180">③ EIP-712 离线签名，无需 gas</text>
+        <line class="edge" x1="100" y1="216" x2="358" y2="216" marker-end="url(#me)"/>
+        <text class="lab-c" x="230" y="209" text-anchor="middle">④ 重发 + PAYMENT-SIGNATURE</text>
+        <line class="edge" x1="360" y1="256" x2="618" y2="256" marker-end="url(#me)"/>
+        <text class="lab-c" x="490" y="249" text-anchor="middle">⑤ /verify 验签</text>
+        <line class="edge" x1="360" y1="296" x2="618" y2="296" marker-end="url(#me)"/>
+        <text class="lab-c" x="490" y="289" text-anchor="middle">⑥ /settle 结算</text>
+        <line class="edge" x1="620" y1="336" x2="858" y2="336" marker-end="url(#me)"/>
+        <text class="lab-c" x="740" y="329" text-anchor="middle">⑦ 提交交易，B402 代付 gas</text>
+        <rect class="note" x="760" y="352" width="196" height="34" rx="8"/>
+        <text class="lab-c lab-m" x="858" y="374" text-anchor="middle">⑧ 买方地址 → 卖方地址</text>
+        <line class="edge ro" x1="620" y1="416" x2="362" y2="416" marker-end="url(#me)"/>
+        <text class="lab-c" x="490" y="409" text-anchor="middle">⑨ success 或 Pending（轮询）</text>
+        <line class="edge ro" x1="360" y1="456" x2="102" y2="456" marker-end="url(#me)"/>
+        <text class="lab-c" x="230" y="449" text-anchor="middle">⑩ 返回资源</text>
+
+        <rect class="note" x="40" y="486" width="880" height="38" rx="8"/>
+        <text class="t2f" x="480" y="510" text-anchor="middle">币安不托管资金 · /verify 每商户 100 次/秒，/settle 20 次/秒 · 目前仅 BSC</text>
+      </svg>
+    </div>
+    <figcaption>钱只在第 ⑧ 步移动一次，从买方地址直接到卖方地址。B402 负责验签、提交和代付 gas，不经手资金。</figcaption>
+  </figure>
+  <ul class="clean">
+    <li><b>网络：</b>BSC 主网（eip155:56，按申请开通）与 BSC 测试网（eip155:97，已开放）；计划扩展到其他 EVM 链。</li>
+    <li><b>资产与签名方式：</b>U、USD1 支持 EIP-3009，无需预授权；USDT、USDC 走 Permit2 的 exact 或 upto，买方首次要对 Permit2 合约做一次 approve。upto 是 B402 在规范之外增加的方案：先授权上限，再按实际用量扣费。</li>
+    <li><b>接口：</b><code>/papi/v2/b402/supported</code>、<code>/verify</code>、<code>/settle</code>；V2 报文与 Coinbase CDP 规范逐字段兼容，另保留 V1 给旧客户端。402 响应里必须原样转发 <code>/supported</code> 返回的 extra 对象，买方只能从这里拿到签名所需的地址。</li>
+    <li><b>结算：</b>7 月 14 日起异步。小额约 10 秒、中额约 25 秒、大额约 45 秒；<code>/settle</code> 幂等，返回 Pending 时轮询，后台最长对账约 30 分钟。</li>
+    <li><b>鉴权：</b>请求头 X-Tesla-ClientId、X-Tesla-SignAccessToken、X-Tesla-Timestamp、X-Tesla-Signature（RSA 签名），加 IP 白名单。申请材料：商户名、邮箱、收款地址、公钥、IP、可选的 webhook。</li>
+    <li><b>被发现：</b>在 settle 报文里附上 <code>extensions.bazaar</code> 元数据即被收录，免费，按 (merchantId, resourceUrl) 去重，同一 URL 在多条链结算会合并展示。</li>
+  </ul>
+
+  <h3>值得照搬的安全模式</h3>
+  <p>这些规则写在官方 SKILL.md 和文档里。做自己的交易软件时，可以直接当作需求清单。</p>
+  <ul class="pattern">
+    <li><b>写前复述，只认明确的肯定回答</b>“yes”“confirm”“go ahead”之外的任何回复都视为未确认，重新询问。<span class="src">baw SKILL.md · MCP 文档</span></li>
+    <li><b>条件单不许静默降级</b>“跌到 500 再买”下不了限价单时，不能改成立即市价成交，必须停下来给用户选项。<span class="src">baw SKILL.md 第 7 条</span></li>
+    <li><b>最小权限，且没有提现 scope</b>Market / Account / Trade / Transfer 四类，按需勾选。<span class="src">MCP 文档</span></li>
+    <li><b>资金入口只留给人</b>首笔注资必须人工完成，Agent 的划转权限只在子账户内部。<span class="src">MCP 文档</span></li>
+    <li><b>规则放在 Agent 改不了的通道</b>在 App 或网页设置，Agent 只读。<span class="src">Agentic Wallet 文档</span></li>
+    <li><b>两段式签名</b>preview 返回 requestId 和风险解析，用户确认后才 execute；preview 报错就不允许 execute。<span class="src">baw external-sign</span></li>
+    <li><b>确认放在签名之前</b>x402 签名约 30 秒失效：先确认金额和用途，签完立即重放请求。<span class="src">campaign.md</span></li>
+    <li><b>不编造地址</b>只用内置常用代币表或用户亲口给出的地址，查不到就停。<span class="src">baw SKILL.md</span></li>
+    <li><b>链上内容一律不可信</b>代币名、符号里可能藏着提示词注入，不得当作指令。<span class="src">baw SKILL.md</span></li>
+    <li><b>失败即关闭</b>安全检查接口不可用时，告知用户并取得确认才能继续。<span class="src">baw SKILL.md</span></li>
+    <li><b>错误原样转述</b>不猜原因，CLI 说了什么就转述什么。<span class="src">baw SKILL.md</span></li>
+    <li><b>凭证不回显</b>不运行 printenv，不打印密钥，不透露密钥文件位置。<span class="src">binance skill auth.md</span></li>
+    <li><b>一键急停</b>断开全部 Agent，撤销全部订单与仓位。<span class="src">MCP 文档</span></li>
+  </ul>
+  <div class="callout">提示词层的规则靠模型自觉遵守，真正的硬约束在服务端：scope、子账户、App 里的限额。自己做产品时两层都要有，不能只写提示词。</div>
+
+  <h3>开发者闭环，以及它断在哪</h3>
+  <ol class="track">
+    <li><span class="st">发现</span><span class="give">llms.txt、Agent OS 页面、Skills Hub 页面、GitHub 仓库</span><span class="gap"></span></li>
+    <li><span class="st">接入</span><span class="give">MCP 一行命令；<code>npx skills add</code>；8 种语言 SDK 与 CLI</span><span class="gap">MCP 只能在桌面端授权</span></li>
+    <li><span class="st">构建</span><span class="give">30 多条产品线 API；钱包 CLI；信号、聪明钱、审计等数据技能；跟单与预测市场的脚手架技能（只给管线，不含策略）</span><span class="gap">没有官方回测服务；钱包信号回测按交易量限次</span></li>
+    <li><span class="st">测试</span><span class="give">CLI 支持 testnet / demo；B402 Sandbox；AI Pro 模拟盘</span><span class="gap">MCP 文档未提供测试环境</span></li>
+    <li><span class="st">上线</span><span class="give">B402 生产凭证；IP 白名单</span><span class="gap">B402 主网需人工审批</span></li>
+    <li><span class="st">分发</span><span class="give">向 Skills Hub 提 PR；B402 Bazaar 自动收录</span><span class="gap">没有评分、排序、计费</span></li>
+    <li class="broken"><span class="st">变现</span><span class="give">Link ID 返佣；x402 按次收费；你自己的订阅</span><span class="gap">MCP、Skills 没有分成</span></li>
+  </ol>
+  <p class="small muted">闭环断在“分发到变现”这一段：被分发出去的技能和 MCP 连接，产生的交易量不会自动回到开发者手里。想闭合，只能把 Link ID 或 x402 嵌进自己的产品。</p>
+
+  <h3>给交易软件开发者的落地建议</h3>
+  <ol class="clean">
+    <li><b>主通道仍用 API Key + Link ID。</b>这是唯一能把用户交易量变成你收入的公开机制：订单的 <code>newClientOrderId</code> 以 <code>x-你的LinkID</code> 开头，长度不超过 36 个字符。</li>
+    <li><b>把 MCP 当获客入口。</b>给已经在用 Claude、ChatGPT 的用户提供一页“连接你的 AI”，同时引导他们注册你的产品。核心交易流程不要建在 MCP 上。</li>
+    <li><b>照搬币安的保险丝。</b>每个 bot 一个子账户、默认无提现、额度和急停做成一等功能、权限变更走重新授权。币安的子账户 API 本身就支持这样做。</li>
+    <li><b>把信号、因子或研究报告做成 x402 端点，并附 Bazaar 元数据。</b>定价参照：BNB Chain Agent Studio 的个股报告每次约 0.1 U，CoinMarketCap 的行情工具每次约 0.01 美元。</li>
+    <li><b>写一个技能提交到 Skills Hub 换分发。</b>贡献规范要求：不推荐任何代币、不放有效钱包地址、不混淆代码、不要求 root 权限。</li>
+    <li><b>补 AI Pro 的空白。</b>历史回测、策略绩效归因、跨交易所执行，目前都不在币安的 AI 产品里。</li>
+    <li><b>把 llms-full.txt 交给编码 Agent，并订阅 changelog。</b>B402 在 7 月把结算改成异步，就是一次必须改代码的变更。</li>
+  </ol>
+</section>
+
+<section id="money">
+  <h2><span class="sec-tag">06 · 收付费</span>谁付钱，付给谁，币安怎么回收</h2>
+
+  <h3>价目表</h3>
+  <div class="tw"><table class="t-price">
+    <thead><tr><th>项目</th><th>谁付给谁</th><th>价格</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><th>币安 AI</th><td>—</td><td>免费</td><td>按地区开放</td></tr>
+      <tr><th>AI Pro Standard</th><td>—</td><td class="num">免费</td><td>每月 250,000 积分，月度刷新；可查询、生成策略、模拟盘、部署实盘</td></tr>
+      <tr><th>AI Pro Premium</th><td>用户 → 币安</td><td class="num">19.99 USDC/月</td><td>Binance Pay 支付；每月 10,000,000 积分；前沿模型；可加购积分</td></tr>
+      <tr><th>积分加购</th><td>用户 → 币安</td><td>未公布单价</td><td>仅 Premium；不刷新，12 个月有效，月度额度用完后才扣</td></tr>
+      <tr><th>AI Pro Beta（历史）</th><td>用户 → 币安</td><td class="num">9.99 美元/月（标价 29.99）</td><td>500 万积分；7 天试用；积分用完降级运行，不停机</td></tr>
+      <tr><th>Agent OS、MCP、Skills、CLI</th><td>—</td><td>免费</td><td>官网 FAQ：使用币安 AI 或 Agent OS 不收取任何适用费用</td></tr>
+      <tr><th>交易手续费</th><td>用户 → 币安</td><td>按现行费率</td><td>子账户里每一笔 Agent 成交照收</td></tr>
+      <tr><th>子账户划转</th><td>—</td><td>免费</td><td>主账户与子账户之间即时到账</td></tr>
+      <tr><th>Agentic Wallet 链上交易</th><td>用户 → 网络 / 平台</td><td>gas（BNB 等）+ 成交费</td><td>成交费从成交额中扣除</td></tr>
+      <tr><th>x402 调用</th><td>用户 → 服务商</td><td class="num">按次，约 0.01–0.1 美元</td><td>实例：CoinMarketCap 约 0.01 美元/次，BNB Chain Agent Studio 约 0.1 U/次；链上直付，gas 由 B402 代付</td></tr>
+      <tr><th>B402 接入与 Bazaar</th><td>—</td><td>文档未列费用</td><td>Bazaar 明确免费</td></tr>
+      <tr><th>Link & Trade 返佣</th><td>币安 → 开发者</td><td class="num">手续费的 30–50%</td><td>新用户、未用他人推荐码、VIP 3 以下</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>钱的流向</h3>
+  <figure>
+    <div class="fig-panel w-760">
+      <svg class="dg" viewBox="0 0 960 430" role="img" aria-label="资金流向：用户向币安支付订阅和手续费，向链上支付 gas 与成交费，向 x402 卖家按次付费且不经过币安；币安向开发者返佣，并为 x402 代付 gas、为活动出奖池">
+        <defs>
+          <marker id="mf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah-m" d="M0,0 L10,5 L0,10 z"/></marker>
+          <marker id="mf2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0,0 L10,5 L0,10 z"/></marker>
+        </defs>
+        <rect class="box" x="40" y="180" width="180" height="72" rx="10"/>
+        <text class="t1" x="130" y="211" text-anchor="middle">用户</text>
+        <text class="t2" x="130" y="232" text-anchor="middle">交易者 · Agent 的主人</text>
+        <rect class="box-a" x="390" y="40" width="200" height="72" rx="10"/>
+        <text class="t1" x="490" y="71" text-anchor="middle">币安</text>
+        <text class="t2" x="490" y="92" text-anchor="middle">交易所 · Binance Pay</text>
+        <rect class="box" x="390" y="330" width="200" height="72" rx="10"/>
+        <text class="t1" x="490" y="361" text-anchor="middle">链上 / BSC</text>
+        <text class="t2" x="490" y="382" text-anchor="middle">钱包 · DEX · 验证者</text>
+        <rect class="box" x="740" y="40" width="180" height="72" rx="10"/>
+        <text class="t1" x="830" y="71" text-anchor="middle">你（开发者）</text>
+        <text class="t2" x="830" y="92" text-anchor="middle">交易软件 · 数据服务</text>
+        <rect class="box" x="740" y="330" width="180" height="72" rx="10"/>
+        <text class="t1" x="830" y="361" text-anchor="middle">x402 卖家</text>
+        <text class="t2" x="830" y="382" text-anchor="middle">数据 · 工具 · 推理</text>
+
+        <line class="edge m" x1="220" y1="196" x2="388" y2="93" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="292" y="112" text-anchor="end">订阅 · 积分加购</text>
+        <text class="lab lab-m" x="292" y="128" text-anchor="end">交易手续费</text>
+
+        <line class="edge m" x1="220" y1="238" x2="388" y2="350" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="300" y="312" text-anchor="end">gas · 成交费</text>
+
+        <line class="edge m" x1="220" y1="226" x2="738" y2="350" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="440" y="266" text-anchor="middle">按次付费 · 链上直达</text>
+
+        <line class="edge m" x1="220" y1="206" x2="738" y2="96" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="668" y="104" text-anchor="middle">你的订阅费</text>
+
+        <line class="edge m" x1="590" y1="66" x2="738" y2="66" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="664" y="58" text-anchor="middle">Link ID 返佣 30–50%</text>
+
+        <line class="edge m ro" x1="540" y1="112" x2="540" y2="328" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="548" y="226">B402 代付 gas</text>
+
+        <polyline class="edge m ro" points="390,54 130,54 130,178" marker-end="url(#mf)"/>
+        <text class="lab lab-m" x="260" y="46" text-anchor="middle">活动奖池 · 赞助调用额度</text>
+
+        <line class="edge ro" x1="830" y1="112" x2="830" y2="328"/>
+        <text class="lab" x="838" y="226">可以是同一个人</text>
+      </svg>
+    </div>
+    <figcaption>琥珀实线是钱，琥珀虚线是币安的补贴或激励。x402 那条线不经过币安：买方的稳定币在链上直接到卖方，币安只负责验签和代付 gas。返佣是开发者能从币安拿到钱的唯一一条线。</figcaption>
+  </figure>
+
+  <h3>币安怎么算这笔账</h3>
+  <ul class="clean">
+    <li><b>免费覆盖到实盘。</b>定价锚不在 AI 功能，而在让更多资金进入 7×24 运转的子账户，子账户里的每笔成交照常收手续费。</li>
+    <li><b>积分是推理成本的阀门。</b>Standard 与 Premium 的积分差 40 倍，Premium 主要用来回收重度用户的模型成本。从 Beta 的 9.99 美元、500 万积分，到正式版的 19.99 USDC、1000 万积分，单位积分价格没变。</li>
+    <li><b>订阅本身也在推支付。</b>以 USDC 计价、经 Binance Pay 收款。</li>
+    <li><b>用交易量换算力。</b>链上信号回测额度按 30 日交易量分档，交易越多，免费算力越多（见下表）。</li>
+    <li><b>x402 押注 BNB Chain。</b>只支持 BSC，U 和 USD1 原生支持免授权签名，gas 由 B402 代付，Agent 支付的流量被导向自家链和生态稳定币。</li>
+    <li><b>用活动给新协议买量。</b>8 月的 bStock 大赛把三件事绑在一起：参赛门槛是付费调用 CoinMarketCap 和 BNB Chain Agent Studio 各至少 3 次，排名看代币化美股的已实现盈亏，奖池随参赛者持仓规模上涨解锁，最高 10 万 USDC。</li>
+    <li><b>数据也是对价。</b>免责声明写明提示词可能用于训练。</li>
+  </ul>
+  <div class="tw" style="max-width:520px"><table>
+    <thead><tr><th>30 日交易量</th><th class="num">每日回测额度</th></tr></thead>
+    <tbody>
+      <tr><td class="num">&lt; 1K 美元</td><td class="num">5 次</td></tr>
+      <tr><td class="num">1K–10K</td><td class="num">10 次</td></tr>
+      <tr><td class="num">10K–100K</td><td class="num">30 次</td></tr>
+      <tr><td class="num">100K–300K</td><td class="num">60 次</td></tr>
+      <tr><td class="num">≥ 300K</td><td class="num">100 次</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">来源：binance-trading-signal 技能文档。限时活动期间每天额外 +15 次，额度每日重置。</p>
+
+  <h3>开发者能从哪里赚钱</h3>
+  <div class="tw"><table class="t-price">
+    <thead><tr><th>渠道</th><th>机制</th><th>条件与限制</th></tr></thead>
+    <tbody>
+      <tr><th>Link & Trade（OMS Toolkit）</th><td>订单打 Link ID 标签，按被推荐用户手续费的 30–50% 实时返佣；现货返到现货钱包，合约返到合约钱包。可按用户、策略、bot 打标做报表</td><td>先申请成为合作伙伴；只对新用户、未用他人推荐码、VIP 3 以下的用户有效。该 FAQ 发布于 2021 年，比例以申请后邮件为准</td></tr>
+      <tr><th>x402 卖服务</th><td>每次调用收稳定币，直接到你的地址</td><td>仅 BSC；主网要申请；合规、风控、客服自理</td></tr>
+      <tr><th>自有订阅</th><td>你的产品自己收费</td><td>不受币安约束</td></tr>
+      <tr><th>活动合作</th><td>成为活动指定的付费调用服务，像 8 月大赛里的 CoinMarketCap 和 BNB Chain Agent Studio</td><td>需要商务合作</td></tr>
+      <tr><th>邀请与 Affiliate</th><td>推广注册</td><td>与 Link ID 返佣的用户不能重叠；本次未核实比例</td></tr>
+      <tr><th>赚不到钱的地方</th><td>MCP 连接、Skills Hub 上架</td><td>文档中没有归因或分成</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="risk">
+  <h2><span class="sec-tag">07 · 竞品与风险</span>同行在做什么，哪些问题还没答案</h2>
+  <h3>同行</h3>
+  <ul class="clean">
+    <li><b>OKX：</b>Agent Trade Kit 是开源的 MCP 工具包，80 多个工具覆盖现货、合约、期权；OnchainOS 提供基于 x402 的支付和 500 多个 DEX 的路由。</li>
+    <li><b>Coinbase：</b>x402 协议的发起方，2026 年 2 月推出 Agentic Wallets。</li>
+    <li><b>币安的差异：</b>同时做 C 端 AI 产品和 B 端 OS，把 CEX、链上钱包、支付三块打通；在支付协议上不另起炉灶，直接兼容 Coinbase 的报文格式。</li>
+  </ul>
+  <p class="small muted">竞品信息来自二手报道，本次未逐项核实。</p>
+
+  <h3>未决问题</h3>
+  <ol class="clean">
+    <li><b>监管定性。</b>Agent 自己找交易、评估风险、开仓，算执行工具还是投资建议，监管还没有定论。币安用《Know Your Agent》框架先行表态，主张在 KYC 之外建立“哪个 Agent、代表谁、谁负责”的问责层。</li>
+    <li><b>可观测性。</b>币安只能看到落到系统里的动作，看不到推理。出错时很难分清是界面、集成、外部工具还是输入信息的问题。</li>
+    <li><b>两套安全模型并存。</b>MCP 不在本地放密钥，binance skill 却要求本地 API Key。用户分不清时，可能把一把能提现的 Key 交给 Agent。</li>
+    <li><b>文档不同步。</b>钱包文档和 Agentic Hub 仍写“8 个技能已上线”，Skills Hub 实际列出 21 个；CLI 文档写“不再积极维护”，官方 binance skill 却依赖 binance-cli v2。</li>
+    <li><b>AI Pro 首发没有回测。</b>只验证代码能跑，不评估盈利。</li>
+    <li><b>区域碎片化。</b>三款产品各自按地区分批开放，名单未公布。</li>
+    <li><b>第三方激励不足。</b>MCP 和 Skills 免费，但没有收入分成，开发者为它做集成的动力主要来自获客。</li>
+    <li><b>用量数据只有一个。</b>Agent OS 日调用超过 28 万次，出自一篇赞助内容，未经独立核实。</li>
+  </ol>
+</section>
+
+<section id="sources">
+  <h2><span class="sec-tag">08 · 来源</span>资料来源</h2>
+  <div class="sources">
+    <h4>官方页面</h4>
+    <ul>
+      <li><a href="https://www.binance.com/zh-CN/AI-overview">币安智能总览与 FAQ</a></li>
+      <li><a href="https://www.binance.com/zh-CN/agent-os">币安 Agent OS</a></li>
+      <li><a href="https://www.binance.com/en/skills">Binance Skills Hub</a></li>
+      <li><a href="https://web3.binance.com/en/agentic-hub">Binance Wallet Agentic Hub</a></li>
+      <li><a href="https://www.binance.com/en/binancex402">Binance x402</a></li>
+      <li><a href="https://www.binance.com/en/support/faq/detail/a78a065d0c4846aaa1af474d8e712ab9">How to Set Up the API Link ID</a></li>
+    </ul>
+    <h4>开发者文档与源码</h4>
+    <ul>
+      <li><a href="https://developers.binance.com/en/docs/agent-native/mcp-server/agentic">Binance MCP Server 文档</a></li>
+      <li><a href="https://developers.binance.com/en/docs/agent-native/overview">Agent Native 总览</a></li>
+      <li><a href="https://developers.binance.com/en/docs/llms.txt">llms.txt</a> 与 <a href="https://developers.binance.com/en/docs/llms-full.txt">llms-full.txt</a></li>
+      <li><a href="https://developers.binance.com/en/docs/products/agentic-wallet/welcome">Binance Agentic Wallet 文档</a></li>
+      <li><a href="https://developers.binance.com/en/docs/products/onchainpay-x402/introduction">Agentic Payments（B402）文档</a></li>
+      <li><a href="https://developers.binance.com/en/docs/products/oms/overview">OMS Toolkit 文档</a></li>
+      <li><a href="https://developers.binance.com/en/docs/sdks-tools/integrations/chatgpt">Binance for ChatGPT</a></li>
+      <li><a href="https://github.com/binance/binance-skills-hub">GitHub：binance/binance-skills-hub</a>（README、CONTRIBUTING、各技能 SKILL.md）</li>
+      <li>MCP 端点与 OAuth 元数据：2026-10-21 匿名请求 agent.binance.com</li>
+    </ul>
+    <h4>报道</h4>
+    <ul>
+      <li><a href="https://www.prnewswire.com/news-releases/binance-launches-binance-ai-pro-bringing-conversational-ai-strategy-building-to-users-302912585.html">PR Newswire：AI Pro 正式版新闻稿（10-19）</a></li>
+      <li><a href="https://www.zawya.com/en/press-release/companies-news/binance-beta-launches-binance-ai-pro-bringing-ai-agentic-trading-to-users-351690">Zawya：AI Pro Beta 新闻稿（03-25）</a></li>
+      <li><a href="https://www.financemagnates.com/cryptocurrency/exchange/binance-launches-retail-ai-assistant-repackages-existing-trading-tools/">Finance Magnates：币安 AI 与币安智能（10-05）</a></li>
+      <li><a href="https://www.financemagnates.com/cryptocurrency/exchange/binance-creates-operating-system-for-agents-as-ai-trading-moves-beyond-apis/">Finance Magnates：Agent OS 发布（08-20）</a></li>
+      <li><a href="https://financefeeds.com/binance-intelligence-ai-stack-inside-the-exchange/">FinanceFeeds：Binance Intelligence（赞助内容）</a></li>
+      <li><a href="https://www.tokenpost.com/news/technology/30598">TokenPost：币安 AI 上线</a></li>
+      <li><a href="https://blockonomi.com/binance-ai-pro-goes-live-what-can-it-do216713-2">Blockonomi：AI Pro 功能</a></li>
+      <li><a href="https://www.zawya.com/en/press-release/research-studies/binance-global-policy-proposes-know-your-agent-framework-to-close-the-accountability-gap-in-agentic-finance-1652209">Zawya：Know Your Agent 框架</a></li>
+      <li><a href="https://www.okx.com/learn/onchainos-our-ai-toolkit-for-developers">OKX：OnchainOS</a> · <a href="https://unlock-bc.com/en/okx-launches-agent-trade-kit-for-ai-trading">Unlock：OKX Agent Trade Kit</a></li>
+    </ul>
+  </div>
+</section>
+
+<footer>本页是产品与开发者生态调研，不构成任何投资建议。价格、额度和可用地区以币安官方最新公告为准。</footer>
+</main>
+</div>
+</div>
+</body>
+</html>
