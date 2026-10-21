@@ -4,4 +4,4 @@
 
 在线阅读：https://xingpt88.github.io/binance-intelligence/
 
-视频版（1 分 46 秒）：https://xingpt88.github.io/binance-intelligence/binance-intelligence.mp4
+视频版（1 分 48 秒）：https://xingpt88.github.io/binance-intelligence/binance-intelligence.mp4
