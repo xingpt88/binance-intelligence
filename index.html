@@ -41,6 +41,9 @@ h1{font-family:var(--serif);font-weight:700;font-size:clamp(30px,4.6vw,46px);lin
 .sub{font-family:var(--serif);font-weight:600;font-size:clamp(17px,2.2vw,21px);color:var(--muted);margin:0 0 18px}
 .dek{max-width:40em;font-size:17px;margin:0 0 14px}
 .meta{max-width:46em;font-size:13.5px;color:var(--muted);margin:0}
+.vid{margin:28px 0 0;max-width:960px}
+.vid video{display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:12px;border:1px solid var(--line);background:#0A1317}
+.vid figcaption{font-size:13.5px;color:var(--muted);margin-top:8px}
 .layout{display:grid;grid-template-columns:minmax(0,1fr);gap:40px}
 @media (min-width:1040px){.layout{grid-template-columns:188px minmax(0,1fr);gap:56px}}
 nav.toc{font-size:14px}
@@ -198,6 +201,10 @@ section[id]{scroll-margin-top:24px}
   <p class="sub">币安 AI · 币安 AI Pro · 币安 Agent OS</p>
   <p class="dek">同一套产品，站在两个位置看。作为交易用户：它能替你做什么、边界在哪、要花多少钱。作为交易软件开发者：开放了哪些接口、权限怎么设计、钱从哪里来、你能从哪里赚。</p>
   <p class="meta">资料截至 2026-10-21：官方页面与 FAQ、开发者文档（llms-full.txt 全量 851 篇）、GitHub binance-skills-hub 源码、对 MCP 端点的匿名探测、发布会报道。本次未登录币安账号，AI Pro 与币安 AI 的界面细节来自官方 FAQ、新闻稿和媒体报道。</p>
+  <figure class="vid">
+    <video controls preload="metadata" playsinline poster="poster.jpg" src="binance-intelligence.mp4"></video>
+    <figcaption>1 分 46 秒视频版：三款产品、保险丝、用户闭环、开发者积木与收付费。旁白为合成语音。</figcaption>
+  </figure>
 </header>
 
 <div class="layout">
